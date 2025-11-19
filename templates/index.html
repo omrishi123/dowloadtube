@@ -1,165 +1,514 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./static/css/output.css">
-    <title>Youtube Video Downloader</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Youtube Video Downloader</title>
+  <meta name="description" content="Clean responsive UI for a YouTube video & audio downloader.">
+  <style>
+    /* -------------------------
+       Design tokens
+       ------------------------- */
+    :root{
+      --bg: #f6f9fc;
+      --card: #fff;
+      --muted: #6b7280;
+      --accent: #06b6d4; /* teal */
+      --accent-2: #7c3aed; /* purple */
+      --text: #0b1220;
+      --glass: rgba(11,18,32,0.04);
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --shadow: 0 10px 30px rgba(8,15,25,0.06);
+      --max-width: 1100px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* -------------------------
+       Reset & layout
+       ------------------------- */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .wrap{
+      width:100%;
+      max-width:var(--max-width);
+      margin:28px auto;
+      padding:18px;
+      border-radius:18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.98));
+      box-shadow: var(--shadow);
+      border: 1px solid var(--glass);
+    }
+
+    /* -------------------------
+       Header
+       ------------------------- */
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 6px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:52px;height:52px;border-radius:12px;
+      background:linear-gradient(135deg,var(--accent-2),var(--accent));
+      color:white;display:grid;place-items:center;font-weight:700;font-size:18px;
+      box-shadow: 0 8px 22px rgba(124,58,237,0.12);
+    }
+    .brand .title{font-size:18px;font-weight:700}
+    .brand .sub{font-size:13px;color:var(--muted)}
+
+    .header-actions{display:flex;gap:8px;align-items:center}
+    .btn{
+      padding:8px 12px;border-radius:10px;border:1px solid var(--glass);background:transparent;color:var(--text);cursor:pointer;
+    }
+    .btn.primary{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;border:none;
+      box-shadow: 0 8px 22px rgba(6,182,212,0.12);
+    }
+
+    /* -------------------------
+       Hero
+       ------------------------- */
+    .hero{
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:26px;
+      align-items:start;
+      padding:18px;
+    }
+
+    .left{
+      min-width:280px;
+    }
+    .thumb{
+      width:100%;
+      border-radius:12px;
+      overflow:hidden;
+      aspect-ratio:16/9;
+      background:linear-gradient(180deg,#0f1724,#24303a);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    .thumb .label{
+      position:absolute;top:14px;left:14px;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,0.32);backdrop-filter: blur(4px);font-weight:600;
+    }
+    .thumb .play{
+      width:92px;height:92px;border-radius:18px;background:rgba(255,255,255,0.08);display:grid;place-items:center;
+      box-shadow: 0 12px 30px rgba(4,9,20,0.18);
+    }
+
+    h1.h-main{margin:14px 0 6px;font-size:22px}
+    p.lead{color:var(--muted);margin:0 0 10px}
+
+    .chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .chip{background:rgba(12,18,30,0.04);padding:8px 12px;border-radius:999px;font-weight:600;color:var(--text);font-size:13px}
+
+    /* -------------------------
+       Right column - forms
+       ------------------------- */
+    aside.right{
+      width:100%;
+      max-width:420px;
+      min-width:260px;
+      align-self:flex-start;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:var(--radius-md);
+      padding:16px;
+      border:1px solid var(--glass);
+      box-shadow: 0 8px 24px rgba(11,18,32,0.04);
+    }
+    .label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+
+    .input-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    input[type="text"], input[type="url"]{
+      flex:1;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(11,18,32,0.06);
+      background:transparent;
+      font-size:14px;
+      outline:none;
+    }
+
+    .quality-inline{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .quality-inline .qbtn{
+      padding:8px 10px;border-radius:10px;border:1px solid rgba(11,18,32,0.06);background:#f3f4f6;font-weight:600;cursor:pointer;font-size:13px;
+    }
+    .quality-inline .qbtn.active{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border:none;
+      box-shadow:0 8px 20px rgba(6,182,212,0.08);
+    }
+
+    .icon-btn{
+      width:52px;height:52px;border-radius:999px;border:none;display:grid;place-items:center;cursor:pointer;background:linear-gradient(180deg,var(--accent),var(--accent-2));
+      box-shadow:0 8px 18px rgba(6,182,212,0.12); color:white;font-weight:700;
+    }
+    .icon-btn.secondary{background:#e6f6f7;color:var(--text);border:1px solid var(--glass)}
+
+    .actions{display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap}
+
+    .progress{
+      height:10px;background:#eef2f6;border-radius:999px;overflow:hidden;margin-top:12px;
+    }
+    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 300ms ease}
+
+    .note{font-size:13px;color:var(--muted);margin-top:10px}
+
+    /* -------------------------
+       Footer
+       ------------------------- */
+    footer{
+      margin-top:18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;padding:12px 6px;color:var(--muted);font-size:13px;
+    }
+
+    /* -------------------------
+       Responsive
+       ------------------------- */
+    @media (max-width:1024px){
+      .hero{grid-template-columns:1fr}
+      aside.right{max-width:100%}
+    }
+
+    @media (max-width:520px){
+      .logo{width:44px;height:44px;font-size:16px}
+      header{padding:10px 6px}
+      .brand .title{font-size:16px}
+      .chip{font-size:12px}
+      .input-row{flex-direction:column;align-items:stretch}
+      .actions{justify-content:space-between}
+    }
+
+    /* small helpers */
+    .center{text-align:center}
+    .tiny{font-size:12px;color:var(--muted)}
+    /* Download overlay */
+    .download-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(11,18,32,0.28),rgba(11,18,32,0.28));backdrop-filter:blur(3px);z-index:9999}
+    .download-overlay[aria-hidden="false"]{display:flex}
+    .download-overlay .overlay-content{background:var(--card);padding:18px 20px;border-radius:12px;display:flex;flex-direction:column;gap:12px;align-items:center;box-shadow:0 14px 40px rgba(4,9,20,0.18);border:1px solid var(--glass)}
+    .download-overlay .spinner{width:58px;height:58px;border-radius:999px;border:6px solid rgba(6,182,212,0.12);border-top-color:var(--accent-2);animation:spin 1s linear infinite}
+    .download-overlay .overlay-content .msg{font-weight:700;color:var(--text)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
 </head>
-
 <body>
-    <header class="text-gray-400 bg-gray-900 body-font">
-        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-            <a class="flex title-font font-medium items-center text-white mb-4 md:mb-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full"
-                    viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-                <span class="ml-3 text-xl">Youtube Video Downloader</span>
-            </a>
-            <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
+  <div class="wrap" role="main" aria-label="YouTube downloader">
 
-            </nav>
-            <button
-                class="inline-flex items-center bg-gray-800 border-0 py-1 px-3 focus:outline-none hover:bg-gray-700 rounded text-base mt-4 md:mt-0">
-                <a href="/">Download New</a>
-            </button>
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">YT</div>
+        <div>
+          <div class="title">Youtube Video Downloader</div>
+          <div class="sub tiny">Free MP3 / MP4 downloads — no signup</div>
         </div>
+      </div>
+
+      <div class="header-actions" role="navigation" aria-label="main actions">
+        <button class="btn" onclick="location.href='/'">Download New</button>
+        <button class="btn primary" onclick="location.href='#download-section'">Get App</button>
+      </div>
     </header>
 
-
-    <section class="text-gray-600 body-font">
-        <div class="container mx-auto flex px-5 py-24 items-center justify-center flex-col">
-            <img class="lg:w-1/2 md:w-3/6 w-5/6 mb-5 object-cover object-center rounded" alt="hero"
-                src="./static/images/bg.jpg">
-            <div class="text-center lg:w-2/3 w-full">
-                <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900">Free Youtube Video Downloader
-                </h1>
-                <p class="mb-8 leading-relaxed">Free Youtube Video Downloader for all 😉✌</p>
-                <div class="flex justify-center">
-                </div>
-            </div>
+    <!-- Hero + controls -->
+    <section class="hero" id="download-section">
+      <div class="left">
+        <div class="thumb" aria-hidden="false">
+          <div class="label">Best Free YouTube Downloaders</div>
+          <div class="play" style="display:grid;place-items:center;">
+            <svg width="62" height="62" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 3v18l15-9L5 3z" fill="white" opacity="0.95"></path>
+            </svg>
+          </div>
         </div>
+
+        <h1 class="h-main">Free Youtube Video Downloader</h1>
+        <p class="lead">Fast downloads — audio (MP3), video (MP4). Paste a YouTube link on the right and choose format & quality.</p>
+
+        <div class="chips" aria-hidden="true">
+          <div class="chip">MP3 / MP4</div>
+          <div class="chip">1080p / 720p</div>
+          <div class="chip">Mobile friendly</div>
+          <div class="chip">No signup</div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
+          <div class="card" style="flex:1;min-width:220px;">
+            <strong>Quick tips</strong>
+            <ul style="margin:8px 0 0 18px;color:var(--muted)">
+              <li>Use valid YouTube link (youtu.be / youtube.com/watch).</li>
+              <li>Choose desired quality before download.</li>
+              <li>Large downloads are queued on the server.</li>
+            </ul>
+          </div>
+
+          <div class="card" style="min-width:220px;max-width:320px;">
+            <strong>Recent</strong>
+            <p class="tiny" style="margin-top:8px;color:var(--muted)">Last downloaded: <strong>Nature Sounds — 720p</strong></p>
+            <div style="height:8px"></div>
+            <div class="tiny">Sign in to save history & favourites.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Forms -->
+      <aside class="right">
+        <!-- VIDEO DOWNLOAD FORM -->
+        <form class="card" action="/submit" method="post" aria-label="Video download form">
+          <label class="label" for="video-link">Paste YouTube link (video)</label>
+          <div class="input-row" style="align-items:center">
+            <input id="video-link" name="link" type="text" inputmode="url" placeholder="https://youtu.be/..." required aria-required="true" />
+            <button type="submit" title="Download video" class="icon-btn" aria-label="Download video">
+              <!-- small download icon -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 10l5 5 5-5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 15V3" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Quality inline -->
+          <div style="margin-top:12px">
+            <label class="label">Choose quality</label>
+            <div class="quality-inline" role="tablist" aria-label="Quality options">
+              <button type="button" class="qbtn" data-quality="best">Highest</button>
+              <button type="button" class="qbtn" data-quality="1080">1080p</button>
+              <button type="button" class="qbtn" data-quality="720">720p</button>
+              <button type="button" class="qbtn" data-quality="480">480p</button>
+              <button type="button" class="qbtn" data-quality="360">360p</button>
+            </div>
+
+            <!-- Hidden select to submit quality with form -->
+            <select name="quality" id="qualitySelect" style="display:none;">
+              <option value="best">Highest</option>
+              <option value="1080">1080</option>
+              <option value="720">720</option>
+              <option value="480">480</option>
+              <option value="360">360</option>
+              <option value="lowest">Lowest</option>
+            </select>
+          </div>
+
+          <div class="progress" aria-hidden="true" style="margin-top:12px;">
+            <i id="videoProgress"></i>
+          </div>
+          <div class="note" id="videoStatus">Ready — paste a link and click the download button.</div>
+        </form>
+
+        <div style="height:12px"></div>
+
+        <!-- AUDIO DOWNLOAD FORM -->
+        <form class="card" action="/submit_audio" method="post" aria-label="Audio download form">
+          <label class="label" for="audio-link">Paste YouTube link (audio)</label>
+          <div class="input-row" style="align-items:center">
+            <input id="audio-link" name="link" type="text" inputmode="url" placeholder="https://youtu.be/..." required aria-required="true" />
+            <button type="submit" title="Download audio" class="icon-btn secondary" aria-label="Download audio">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 15V3" stroke="#0b1220" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 10l5 5 5-5" stroke="#0b1220" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="note" style="margin-top:10px">Converts video to MP3. Large files may take longer to process.</div>
+        </form>
+      </aside>
     </section>
 
-
-
-
-
-    <section class="text-gray-600 body-font">
-        <div class="container px-5 mb-8 mx-auto">
-            <div class="flex flex-col text-center w-full mb-12">
-                <h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">Copy Paste Link Here 😁👍
-                </h1>
-                <p class="lg:w-2/3 mx-auto leading-relaxed text-base">Copy the link from youtube video and paste it here
-                    and click download button !. To Download New Video click Download New Video Button. 👍</p>
-            </div>
-            <div class="container mx-auto">
-
-                <form class="w-full mx-auto" action="/submit" method="post">
-
-                    <div class="flex items-center border-b border-teal-500 py-2">
-
-                        <input
-                            class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
-                            type="text" placeholder="Youtube Video Link mp4" aria-label="Full name" required name="link">
-                        <button
-                            class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-1 text-white rounded-full"
-                            type="submit">
-                            <img src="/static/images/down.jpg" alt="" width="50px" height="50px">
-                        </button>
-                        &nbsp; &nbsp;
-                        <button
-                            class="flex-shrink-0  hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white rounded-full"
-                            type="button">
-                            <a href="/"><img src="/static/images/add.jpg" width="40px" height="40px" alt="" srcset=""></a>
-                        </button>
-
-                    </div>
-                </form>
-                <br><br>
-                <form class="w-full mx-auto" action="/submit_audio" method="post">
-                    <div class="flex items-center border-b border-teal-500 py-2">
-                        <input
-                            class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
-                            type="text" placeholder="Youtube Video Link mp3" aria-label="Full name" required name="link">
-                            <button
-                            class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-1 text-white rounded-full"
-                            type="submit">
-                            <img src="/static/images/down.jpg" alt="" width="50px" height="50px">
-                        </button>
-                        &nbsp; &nbsp;
-                        <button
-                            class="flex-shrink-0  hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white rounded-full"
-                            type="button">
-                            <a href="/"><img src="/static/images/add.jpg" width="40px" height="40px" alt="" srcset=""></a>
-                        </button>
-
-                    </div>
-                </form>
-            </div>
-        </div>
-    </section>
-
-
-
-
-
-
-
-    <footer class="text-gray-400 bg-gray-900 body-font">
-        <div class="container px-5 py-8 mx-auto flex items-center sm:flex-row flex-col">
-            <a class="flex title-font font-medium items-center md:justify-start justify-center text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full"
-                    viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-                <span class="ml-3 text-xl">Youtube Video Downloader</span>
-            </a>
-            <p class="text-sm text-gray-400 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-800 sm:py-2 sm:mt-0 mt-4">©
-                2023 Youtube Video Downloader —
-                <a href="/" class="text-gray-500 ml-1" target="_blank"
-                    rel="noopener noreferrer">Made with ❤ by Vittal Badami</a>
-            </p>
-            <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
-                <a class="text-gray-400">
-                    <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        class="w-5 h-5" viewBox="0 0 24 24">
-                        <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
-                    </svg>
-                </a>
-                <a class="ml-3 text-gray-400">
-                    <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        class="w-5 h-5" viewBox="0 0 24 24">
-                        <path
-                            d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
-                        </path>
-                    </svg>
-                </a>
-                <a class="ml-3 text-gray-400">
-                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
-                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-                        <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
-                    </svg>
-                </a>
-                <a class="ml-3 text-gray-400">
-                    <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-width="0" class="w-5 h-5" viewBox="0 0 24 24">
-                        <path stroke="none"
-                            d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
-                        </path>
-                        <circle cx="4" cy="4" r="2" stroke="none"></circle>
-                    </svg>
-                </a>
-            </span>
-        </div>
+    <!-- Footer -->
+    <footer>
+      <div>© <strong>Youtube Video Downloader</strong> — Fast downloads</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <a href="/" class="tiny">Privacy</a>
+        <a href="/" class="tiny">TOS</a>
+      </div>
     </footer>
+
+    <div style="text-align:center;padding-top:10px;color:var(--muted);font-size:13px">Made By Om Rishi</div>
+  </div>
+
+  <!-- Download overlay -->
+  <div id="downloadOverlay" class="download-overlay" aria-hidden="true">
+    <div class="overlay-content" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="msg" id="overlayMessage">Preparing your download...</div>
+    </div>
+  </div>
+
+  <!-- -----------------------
+       Minimal JS (keeps behavior like your tailwind version)
+       - quality selection updates hidden select for form submit
+       - simple visual progress simulation (no network calls)
+       ----------------------- -->
+  <script>
+    (function(){
+      // Quality buttons for the VIDEO form
+      const qButtons = document.querySelectorAll('.qbtn');
+      const qSelect = document.getElementById('qualitySelect');
+      const videoForm = document.querySelector('form[action="/submit"]');
+      const videoProgress = document.getElementById('videoProgress');
+      const videoStatus = document.getElementById('videoStatus');
+
+      function setActiveQuality(btn){
+        qButtons.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const q = btn.getAttribute('data-quality');
+        if(qSelect) qSelect.value = q;
+      }
+
+      // init - first button active
+      if(qButtons.length){
+        setActiveQuality(qButtons[0]);
+        qButtons.forEach(btn=>{
+          btn.addEventListener('click', ()=> setActiveQuality(btn));
+          // keyboard accessibility
+          btn.addEventListener('keydown', (e)=>{
+            if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveQuality(btn); }
+          });
+        });
+      }
+
+      // Optional: simulate progress on submit to give user feedback.
+      // NOTE: Your backend should handle the actual conversion. Remove simulation if undesired.
+      if(videoForm){
+        videoForm.addEventListener('submit', function(e){
+          // simple validation
+          const url = this.querySelector('input[name="link"]').value.trim();
+          if(!url){
+            e.preventDefault();
+            alert('Please paste a valid YouTube link.');
+            return;
+          }
+
+          // simulate UX: show progress for 2.2s — does not block form submission
+          videoStatus.textContent = 'Preparing download...';
+          progressSim(videoProgress, videoStatus, 'Preparing download...', 'Download starting...');
+          // allow form to submit normally (comment out next line to stop form)
+          // if you want to prevent navigation and call API via fetch(), call e.preventDefault() and use fetch()
+        });
+      }
+
+      // small function to animate progress bar
+      function progressSim(el, statusEl, midText, doneText){
+        let pct = 6;
+        el.style.width = pct + '%';
+        statusEl.textContent = midText;
+        const id = setInterval(()=>{
+          pct += Math.random()*18;
+          if(pct >= 96) pct = 96;
+          el.style.width = pct + '%';
+        }, 220);
+        setTimeout(()=> {
+          clearInterval(id);
+          el.style.width = '100%';
+          statusEl.textContent = doneText;
+          setTimeout(()=>{ el.style.width = '0%'; statusEl.textContent = 'Ready — paste a link and click the download button.' }, 1400);
+        }, 2200);
+      }
+
+      // If you'd rather submit using fetch(), here's a brief example (commented):
+      //
+      // videoForm.addEventListener('submit', async function (e) {
+      //   e.preventDefault();
+      //   const data = new FormData(this);
+      //   const resp = await fetch('/submit', { method:'POST', body: data });
+      //   // handle response (show download link, errors, progress, etc.)
+      // });
+
+      // Accessibility: allow pressing Enter on input to trigger the nearest submit
+      document.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('keydown', function(e){
+          if(e.key === 'Enter'){
+            const form = this.closest('form');
+            if(form) form.querySelector('[type="submit"], button[title="Download video"], button[title="Download audio"]')?.click();
+          }
+        });
+      });
+    })();
+  </script>
+  <script>
+    (function(){
+      const overlay = document.getElementById('downloadOverlay');
+      const overlayMsg = document.getElementById('overlayMessage');
+      let hideTimer = null;
+
+      function setButtonsDisabled(form, disabled){
+        if(!form) return;
+        Array.from(form.querySelectorAll('button, input[type="submit"]')).forEach(b=>{ try{ b.disabled = disabled }catch(e){} });
+      }
+
+      function showOverlay(message, form){
+        if(message) overlayMsg.textContent = message;
+        overlay.setAttribute('aria-hidden','false');
+        setButtonsDisabled(form, true);
+        // auto-hide after 2 minutes to prevent stuck overlay
+        if(hideTimer) clearTimeout(hideTimer);
+        hideTimer = setTimeout(()=>{ hideOverlay(); }, 2 * 60 * 1000);
+      }
+
+      function hideOverlay(){
+        overlay.setAttribute('aria-hidden','true');
+        // re-enable all forms' buttons
+        document.querySelectorAll('form').forEach(f=> setButtonsDisabled(f, false));
+        if(hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      }
+
+      // Hide overlay when user returns to page (download likely completed)
+      window.addEventListener('focus', hideOverlay);
+      document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') hideOverlay(); });
+
+      // Attach to video and audio forms
+      try{
+        const videoForm = document.querySelector('form[action="/submit"]');
+        const audioForm = document.querySelector('form[action="/submit_audio"]');
+
+        if(videoForm){
+          videoForm.addEventListener('submit', function(e){
+            const url = this.querySelector('input[name="link"]')?.value?.trim();
+            if(!url){ e.preventDefault(); alert('Please paste a valid YouTube link.'); return; }
+            showOverlay('Preparing video download...', this);
+          });
+        }
+
+        if(audioForm){
+          audioForm.addEventListener('submit', function(e){
+            const url = this.querySelector('input[name="link"]')?.value?.trim();
+            if(!url){ e.preventDefault(); alert('Please paste a valid YouTube link.'); return; }
+            showOverlay('Preparing audio download...', this);
+          });
+        }
+      }catch(err){ console.error('Overlay init error', err); }
+    })();
+  </script>
 </body>
-
-
 </html>

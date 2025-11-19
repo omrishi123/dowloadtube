@@ -33,24 +33,108 @@
 # Requirements
 
 ### -> Flask
-### -> Python 3.6.9
-### -> pytube
+### -> Python 3.8+
+### -> yt-dlp (upgraded from pytube for better YouTube API compatibility)
 ### -> ffmpeg
 
-# For Windows users
+---
 
-## Download ffmpeg from open source libraries and paste the ffmpeg bin directory in the path environment variable.
+# Quick Setup & Run
 
-# Download Link for FFMPEG
+## For Windows Users
+
+### Option 1: Automated Setup (Easiest)
+1. Run the setup script: `setup.bat`
+2. Follow the prompts
+3. After setup completes, run: `python app.py`
+4. Open http://127.0.0.1:5000 in your browser
+
+### Option 2: Manual Setup
+1. Create and activate a Python virtual environment:
+```bash
+python -m venv venv
+.\venv\Scripts\activate.ps1
+# If script execution is blocked, run:
+# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Install ffmpeg:
+   - Download from: [FFMPEg Download](https://ffmpeg.org/download.html)
+   - Extract and add the `bin` folder to your System PATH environment variable
+   - Verify installation:
+```bash
+ffmpeg -version
+```
+
+4. Run the application:
+```bash
+python app.py
+```
+
+5. Open http://127.0.0.1:5000 in your browser
+
+## For Linux/macOS Users
+
+1. Create and activate virtual environment:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Install ffmpeg:
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install ffmpeg
+
+# macOS
+brew install ffmpeg
+
+# Verify
+ffmpeg -version
+```
+
+4. Run the application:
+```bash
+python app.py
+```
+
+5. Open http://127.0.0.1:5000 in your browser
+
+---
+
+## Troubleshooting
+
+**Problem**: `HTTP Error 400: Bad Request` when downloading
+- **Solution**: Ensure yt-dlp is up to date:
+```bash
+pip install --upgrade yt-dlp
+```
+
+**Problem**: `ffmpeg: command not found`
+- **Solution**: Ensure ffmpeg is installed and on your PATH. Restart your terminal after installation.
+
+**Problem**: Port 5000 already in use
+- **Solution**: Modify `app.py` line 148 to use a different port:
+```python
+app.run(debug=False, port=5001, host="0.0.0.0")  # Change 5001 to any available port
+```
+
+---
+
+## Download Link for FFMPEG
 
 [FFMPEg Download](https://ffmpeg.org/download.html)
-
-# For Linux users FFMPEG is available as a package 
-## Follow below steps 
-
-### $ sudo apt update
-### $ sudo apt install ffmpeg
-### $ ffmpeg -version
 
 <p align="center">
 <img height="500px" width="500px" src="https://github.com/VittalAB/Youtube-Video-Downloader/assets/59869004/54cb8a66-ea15-4a70-a152-cf7771e01642"/>
