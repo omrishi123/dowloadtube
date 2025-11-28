@@ -52,10 +52,23 @@ def download_audio(link):
             # Try to use a JS runtime via player_client default to avoid some extractor issues
             'extractor_args': {'youtube': {'player_client': 'default'}},
         }
-        # If a cookie file path is provided via env var, pass it to yt-dlp
+        # If a cookie file path is provided via env var, pass it to yt-dlp (or accept raw cookie content)
         cookie_env = os.environ.get('YTDLP_COOKIES_PATH') or os.environ.get('YTDLP_COOKIES')
-        if cookie_env and os.path.exists(cookie_env):
-            ydl_opts['cookiefile'] = cookie_env
+        if cookie_env:
+            # If the environment variable is a path to a file, use it directly.
+            if os.path.exists(cookie_env):
+                ydl_opts['cookiefile'] = cookie_env
+            else:
+                # Otherwise treat the env var as raw cookies content and write to a temp file.
+                try:
+                    import tempfile
+                    tf = tempfile.NamedTemporaryFile(delete=False, prefix='ytdlp_cookies_', suffix='.txt', mode='w', encoding='utf-8')
+                    tf.write(cookie_env)
+                    tf.flush()
+                    tf.close()
+                    ydl_opts['cookiefile'] = tf.name
+                except Exception as ee:
+                    print(f"Could not write cookies content to temp file: {ee}")
 
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(link, download=True)
@@ -149,10 +162,23 @@ def download_video(link, quality='best'):
             # Try to use a JS runtime via player_client default to avoid some extractor issues
             'extractor_args': {'youtube': {'player_client': 'default'}},
         }
-        # If a cookie file path is provided via env var, pass it to yt-dlp
+        # If a cookie file path is provided via env var, pass it to yt-dlp (or accept raw cookie content)
         cookie_env = os.environ.get('YTDLP_COOKIES_PATH') or os.environ.get('YTDLP_COOKIES')
-        if cookie_env and os.path.exists(cookie_env):
-            ydl_opts['cookiefile'] = cookie_env
+        if cookie_env:
+            # If the environment variable is a path to a file, use it directly.
+            if os.path.exists(cookie_env):
+                ydl_opts['cookiefile'] = cookie_env
+            else:
+                # Otherwise treat the env var as raw cookies content and write to a temp file.
+                try:
+                    import tempfile
+                    tf = tempfile.NamedTemporaryFile(delete=False, prefix='ytdlp_cookies_', suffix='.txt', mode='w', encoding='utf-8')
+                    tf.write(cookie_env)
+                    tf.flush()
+                    tf.close()
+                    ydl_opts['cookiefile'] = tf.name
+                except Exception as ee:
+                    print(f"Could not write cookies content to temp file: {ee}")
 
         # Try download twice on failures that might be caused by transient fragment issues
         max_attempts = 2
