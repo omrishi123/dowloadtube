@@ -49,7 +49,13 @@ def download_audio(link):
             'outtmpl': './audios/%(title)s.%(ext)s',
             'quiet': False,
             'no_warnings': False,
+            # Try to use a JS runtime via player_client default to avoid some extractor issues
+            'extractor_args': {'youtube': {'player_client': 'default'}},
         }
+        # If a cookie file path is provided via env var, pass it to yt-dlp
+        cookie_env = os.environ.get('YTDLP_COOKIES_PATH') or os.environ.get('YTDLP_COOKIES')
+        if cookie_env and os.path.exists(cookie_env):
+            ydl_opts['cookiefile'] = cookie_env
 
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(link, download=True)
@@ -140,7 +146,13 @@ def download_video(link, quality='best'):
                     'preferedformat': 'mp4',
                 }
             ],
+            # Try to use a JS runtime via player_client default to avoid some extractor issues
+            'extractor_args': {'youtube': {'player_client': 'default'}},
         }
+        # If a cookie file path is provided via env var, pass it to yt-dlp
+        cookie_env = os.environ.get('YTDLP_COOKIES_PATH') or os.environ.get('YTDLP_COOKIES')
+        if cookie_env and os.path.exists(cookie_env):
+            ydl_opts['cookiefile'] = cookie_env
 
         # Try download twice on failures that might be caused by transient fragment issues
         max_attempts = 2
@@ -225,7 +237,16 @@ def hello_world():
 def submit_audio():
     data = request.form.get('link')
     print(data)
-    write_path = download_audio(data)
+    try:
+        write_path = download_audio(data)
+    except Exception as e:
+        # Provide a helpful message for common yt-dlp errors (cookies / sign-in)
+        print(f"download_audio error: {e}")
+        msg = ("Error: yt-dlp failed to extract the audio. This often happens when YouTube asks to "
+               "sign in or confirm you're not a bot. You can try supplying a cookies file via the "
+               "environment variable `YTDLP_COOKIES_PATH`, or test with a different video. See: "
+               "https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp")
+        return Response(msg, status=502, mimetype='text/plain')
     print(write_path)
     abs_path = os.path.abspath(write_path)
 
@@ -273,7 +294,15 @@ def submit():
     data = request.form.get('link')
     quality = request.form.get('quality', 'best')
     print(data, quality)
-    write_path = download_video(data, quality)
+    try:
+        write_path = download_video(data, quality)
+    except Exception as e:
+        print(f"download_video error: {e}")
+        msg = ("Error: yt-dlp failed to extract the video. This often happens when YouTube asks to "
+               "sign in or confirm you're not a bot. You can try supplying a cookies file via the "
+               "environment variable `YTDLP_COOKIES_PATH`, or test with a different video. See: "
+               "https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp")
+        return Response(msg, status=502, mimetype='text/plain')
     print(write_path)
     abs_path = os.path.abspath(write_path)
 
