@@ -49,13 +49,8 @@ def download_audio(link):
             'outtmpl': './audios/%(title)s.%(ext)s',
             'quiet': False,
             'no_warnings': False,
-            # Use TV client for best compatibility on Render (must be a list, not string)
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['tv', 'android', 'web'],
-                    'po_token': ['web']
-                }
-            },
+            # Try to use a JS runtime via player_client default to avoid some extractor issues
+            'extractor_args': {'youtube': {'player_client': 'default'}},
         }
         # If a cookie file path is provided via env var, pass it to yt-dlp (or accept raw cookie content)
         cookie_env = os.environ.get('YTDLP_COOKIES_PATH') or os.environ.get('YTDLP_COOKIES')
@@ -164,13 +159,8 @@ def download_video(link, quality='best'):
                     'preferedformat': 'mp4',
                 }
             ],
-            # Use TV client for best compatibility on Render (must be a list, not string)
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['tv', 'android', 'web'],
-                    'po_token': ['web']
-                }
-            },
+            # Try to use a JS runtime via player_client default to avoid some extractor issues
+            'extractor_args': {'youtube': {'player_client': 'default'}},
         }
         # If a cookie file path is provided via env var, pass it to yt-dlp (or accept raw cookie content)
         cookie_env = os.environ.get('YTDLP_COOKIES_PATH') or os.environ.get('YTDLP_COOKIES')
